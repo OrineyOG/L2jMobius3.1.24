@@ -62,4 +62,10 @@ public class ServitorSkillUse implements IPlayerActionHandler
 			}
 		});
 	}
+	
+	@Override
+	public boolean isPetAction()
+	{
+		return true;
+	}
 }

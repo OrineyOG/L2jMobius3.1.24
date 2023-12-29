@@ -25,4 +25,9 @@ import org.l2jmobius.gameserver.model.actor.Player;
 public interface IPlayerActionHandler
 {
 	void useAction(Player player, ActionDataHolder data, boolean ctrlPressed, boolean shiftPressed);
+	
+	default boolean isPetAction()
+	{
+		return false;
+	}
 }

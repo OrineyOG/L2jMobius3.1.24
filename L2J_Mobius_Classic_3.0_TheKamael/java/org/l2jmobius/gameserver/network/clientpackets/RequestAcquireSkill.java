@@ -108,6 +108,11 @@ public class RequestAcquireSkill implements ClientPacket
 		
 		final int skillId = player.getReplacementSkill(_id);
 		final Skill existingSkill = player.getKnownSkill(skillId); // Mobius: Keep existing sublevel.
+		if ((_level > 65536000) && (existingSkill != null) && (existingSkill.getSubLevel() > 1000))
+		{
+			_level -= existingSkill.getSubLevel() * 65536;
+		}
+		
 		final Skill skill = SkillData.getInstance().getSkill(skillId, _level, existingSkill == null ? 0 : existingSkill.getSubLevel());
 		if (skill == null)
 		{
@@ -608,7 +613,7 @@ public class RequestAcquireSkill implements ClientPacket
 		player.sendItemList();
 		player.updateShortCuts(_id, skill.getLevel(), skill.getSubLevel());
 		player.sendPacket(new ShortCutInit(player));
-		player.sendPacket(new ExBasicActionList(ExBasicActionList.DEFAULT_ACTION_LIST));
+		player.sendPacket(ExBasicActionList.STATIC_PACKET);
 		player.sendSkillList(skill.getId());
 		showSkillList(trainer, player);
 		

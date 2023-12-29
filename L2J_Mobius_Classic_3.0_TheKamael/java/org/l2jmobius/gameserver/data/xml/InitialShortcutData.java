@@ -307,7 +307,7 @@ public class InitialShortcutData implements IXmlReader
 			
 			// Register shortcut
 			final Shortcut newShortcut = new Shortcut(shortcut.getSlot(), shortcut.getPage(), shortcut.getType(), shortcutId, shortcut.getLevel(), shortcut.getSubLevel(), shortcut.getCharacterType());
-			player.sendPacket(new ShortCutRegister(newShortcut));
+			player.sendPacket(new ShortCutRegister(newShortcut, player));
 			player.registerShortCut(newShortcut);
 		}
 		
@@ -350,7 +350,7 @@ public class InitialShortcutData implements IXmlReader
 				}
 				// Register shortcut
 				final Shortcut newShortcut = new Shortcut(shortcut.getSlot(), shortcut.getPage(), shortcut.getType(), shortcutId, shortcut.getLevel(), shortcut.getSubLevel(), shortcut.getCharacterType());
-				player.sendPacket(new ShortCutRegister(newShortcut));
+				player.sendPacket(new ShortCutRegister(newShortcut, player));
 				player.registerShortCut(newShortcut);
 			}
 		}

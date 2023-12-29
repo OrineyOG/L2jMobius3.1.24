@@ -19,9 +19,11 @@ package org.l2jmobius.gameserver.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
@@ -86,6 +88,8 @@ public class EffectList
 	private final AtomicInteger _danceCount = new AtomicInteger();
 	private final AtomicInteger _toggleCount = new AtomicInteger();
 	private final AtomicInteger _debuffCount = new AtomicInteger();
+	private static final long DEBUFF_PROTECTION_DURATION = 20 * 1000; // 20 s debuff protection
+	private final Map<AbnormalType, Long> debuffProtectionMap = new HashMap<>();
 	/** If {@code true} this effect list has buffs removed on any action. */
 	private final AtomicInteger _hasBuffsRemovedOnAnyAction = new AtomicInteger();
 	/** If {@code true} this effect list has buffs removed on damage. */
@@ -860,6 +864,12 @@ public class EffectList
 			// Decrease specific buff count
 			increaseDecreaseCount(info, false);
 			info.getSkill().applyEffectScope(EffectScope.END, info, true, false);
+			
+			// Update debuff protection if the removed effect is a debuff and the owner is a player
+			if (info.getSkill().getBuffType().isDebuff() && (_owner instanceof Player))
+			{
+				updateDebuffProtection(info.getSkill().getAbnormalType());
+			}
 		}
 	}
 	
@@ -912,12 +922,68 @@ public class EffectList
 		}
 		else
 		{
+			// Check for debuff protection
+			if (skill.getBuffType().isDebuff() && (info.getEffector() instanceof Player))
+			{
+				if (!applyDebuffProtection(info))
+				{
+					return;
+				}
+			}
+			
 			// Add active effect
 			addActive(info);
 		}
 		
 		// Update stats, effect flags and icons.
 		updateEffectList(true);
+	}
+	
+	private boolean applyDebuffProtection(BuffInfo info)
+	{
+		final Skill skill = info.getSkill();
+		long currentTime = System.currentTimeMillis();
+		Long lastDebuffTime = debuffProtectionMap.get(skill.getAbnormalType());
+		if ((lastDebuffTime != null) && ((currentTime - lastDebuffTime) < DEBUFF_PROTECTION_DURATION))
+		{
+			// Check if the skill should bypass the protection
+			if (skill.shouldBypassDebuffProtection())
+			{
+				// Reduce the debuff duration by 50%
+				int reducedDuration = (int) (info.getAbnormalTime() * 0.5);
+				info.setAbnormalTime(reducedDuration);
+				// Send the message to the effector's in-game chat window
+				long remainingTime = DEBUFF_PROTECTION_DURATION - (currentTime - lastDebuffTime);
+				int remainingSeconds = (int) (remainingTime / 1000);
+				String message = skill.getName() + " duration reduced by 50% because " + info.getEffected().getName() + " is still protected from " + skill.getAbnormalType() + " for " + remainingSeconds + " seconds.";
+				if (info.getEffector() instanceof Player)
+				{
+					Player player = (Player) info.getEffector();
+					player.sendMessage(message);
+				}
+			}
+			else
+			{
+				// Debuff protection active. Debuff not applied.
+				long remainingTime = DEBUFF_PROTECTION_DURATION - (currentTime - lastDebuffTime);
+				int remainingSeconds = (int) (remainingTime / 1000);
+				// Send the message to the debuffers in-game chat window
+				String message = skill.getName() + " failed because " + info.getEffected().getName() + " has protection from " + skill.getAbnormalType() + " for " + remainingSeconds + " seconds.";
+				if (info.getEffector() instanceof Player)
+				{
+					Player player = (Player) info.getEffector();
+					player.sendMessage(message);
+				}
+				return false;
+			}
+		}
+		debuffProtectionMap.put(skill.getAbnormalType(), currentTime);
+		return true;
+	}
+	
+	public void updateDebuffProtection(AbnormalType debuffType)
+	{
+		debuffProtectionMap.put(debuffType, System.currentTimeMillis());
 	}
 	
 	private void addActive(BuffInfo info)

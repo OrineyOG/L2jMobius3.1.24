@@ -27,6 +27,7 @@ import org.l2jmobius.commons.util.Rnd;
 import org.l2jmobius.gameserver.geoengine.GeoEngine;
 import org.l2jmobius.gameserver.model.WorldObject;
 import org.l2jmobius.gameserver.model.actor.Creature;
+import org.l2jmobius.gameserver.model.actor.Player;
 import org.l2jmobius.gameserver.model.actor.Summon;
 import org.l2jmobius.gameserver.model.item.instance.Item;
 import org.l2jmobius.gameserver.model.skill.Skill;
@@ -327,9 +328,17 @@ public class SummonAI extends PlayableAI implements Runnable
 		}
 		
 		final Summon summon = getActor();
-		if ((summon.getOwner() != null) && (summon.getOwner() != attacker) && !summon.isMoving() && summon.canAttack(attacker, false))
+		final Player owner = summon.getOwner();
+		if (owner != null)
 		{
-			summon.doAttack(attacker);
+			if (summon.calculateDistance3D(owner) > 3000)
+			{
+				summon.getAI().setIntention(CtrlIntention.AI_INTENTION_FOLLOW, owner);
+			}
+			else if ((owner != attacker) && !summon.isMoving() && summon.canAttack(attacker, false))
+			{
+				summon.doAttack(attacker);
+			}
 		}
 	}
 	

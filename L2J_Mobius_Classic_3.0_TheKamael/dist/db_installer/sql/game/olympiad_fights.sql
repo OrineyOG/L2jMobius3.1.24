@@ -10,4 +10,4 @@ CREATE TABLE IF NOT EXISTS `olympiad_fights` (
   `classed` tinyint(4) NOT NULL DEFAULT 0,
   KEY `charOneId` (`charOneId`),
   KEY `charTwoId` (`charTwoId`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;

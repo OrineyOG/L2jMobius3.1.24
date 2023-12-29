@@ -93,7 +93,6 @@ public class MDefenseFinalizer implements IStatFunction
 	{
 		final double mul = Math.max(creature.getStat().getMul(stat), 0.5);
 		final double add = creature.getStat().getAdd(stat);
-		final double addmul = creature.getStat().getAddMul(stat);
-		return (((baseValue * addmul) + add) * mul) + creature.getStat().getMoveTypeValue(stat, creature.getMoveType());
+		return Math.max((baseValue * mul) + add + creature.getStat().getMoveTypeValue(stat, creature.getMoveType()), creature.getTemplate().getBaseValue(stat, 0) * 0.2);
 	}
 }

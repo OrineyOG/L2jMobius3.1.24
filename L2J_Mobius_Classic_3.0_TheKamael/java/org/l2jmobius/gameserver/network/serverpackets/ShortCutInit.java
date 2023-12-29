@@ -19,20 +19,21 @@ package org.l2jmobius.gameserver.network.serverpackets;
 import java.util.Collection;
 
 import org.l2jmobius.gameserver.model.Shortcut;
+import org.l2jmobius.gameserver.model.VariationInstance;
 import org.l2jmobius.gameserver.model.actor.Player;
+import org.l2jmobius.gameserver.model.item.instance.Item;
 import org.l2jmobius.gameserver.network.ServerPackets;
 
 public class ShortCutInit extends ServerPacket
 {
-	private Collection<Shortcut> _shortCuts;
+	private final Player _player;
+	private final Collection<Shortcut> _shortCuts;
 	
 	public ShortCutInit(Player player)
 	{
-		if (player == null)
-		{
-			return;
-		}
+		_player = player;
 		_shortCuts = player.getAllShortCuts();
+		player.restoreAutoShortcutVisual();
 	}
 	
 	@Override
@@ -54,8 +55,21 @@ public class ShortCutInit extends ServerPacket
 					writeInt(sc.getSharedReuseGroup());
 					writeInt(0);
 					writeInt(0);
-					writeLong(0); // Augment id
-					writeInt(0); // Visual id
+					
+					final Item item = _player.getInventory().getItemByObjectId(sc.getId());
+					if (item != null)
+					{
+						final VariationInstance augment = item.getAugmentation();
+						writeInt(augment != null ? augment.getOption1Id() : 0); // item augment id
+						writeInt(augment != null ? augment.getOption2Id() : 0); // item augment id
+						writeInt(item.getVisualId()); // visual id
+					}
+					else
+					{
+						writeInt(0);
+						writeInt(0);
+						writeInt(0);
+					}
 					break;
 				}
 				case SKILL:

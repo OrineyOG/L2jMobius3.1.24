@@ -99,6 +99,9 @@
 	<class classId="194" name="Soul Breaker" parentClassId="193" />
 	<class classId="130" name="Arbalester" parentClassId="126" />
 	<class classId="131" name="Doombringer" parentClassId="127" />
+	<class classId="135" name="Inspector" parentClassId="192" />
+	<class classId="136" name="Judicator" parentClassId="135" />	
 	<class classId="195" name="Soul Hound" parentClassId="194" />
-	<class classId="134" name="Trickster" parentClassId="130" />
+	<class classId="134" name="Trickster" parentClassId="194" />
+
 </list>

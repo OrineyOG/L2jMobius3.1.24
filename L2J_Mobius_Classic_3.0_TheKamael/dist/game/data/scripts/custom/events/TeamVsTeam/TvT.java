@@ -37,6 +37,7 @@ import org.l2jmobius.gameserver.model.actor.Creature;
 import org.l2jmobius.gameserver.model.actor.Npc;
 import org.l2jmobius.gameserver.model.actor.Player;
 import org.l2jmobius.gameserver.model.actor.Summon;
+import org.l2jmobius.gameserver.model.actor.instance.Door;
 import org.l2jmobius.gameserver.model.events.EventType;
 import org.l2jmobius.gameserver.model.events.annotations.RegisterEvent;
 import org.l2jmobius.gameserver.model.events.impl.creature.OnCreatureDeath;
@@ -254,6 +255,8 @@ public class TvT extends Event
 				final InstanceManager manager = InstanceManager.getInstance();
 				final InstanceTemplate template = manager.getInstanceTemplate(INSTANCE_ID);
 				PVP_WORLD = manager.createInstance(template, null);
+				// Make sure doors are closed.
+				PVP_WORLD.getDoors().forEach(Door::closeMe);
 				// Randomize player list and separate teams.
 				final List<Player> playerList = new ArrayList<>(PLAYER_LIST.size());
 				playerList.addAll(PLAYER_LIST);

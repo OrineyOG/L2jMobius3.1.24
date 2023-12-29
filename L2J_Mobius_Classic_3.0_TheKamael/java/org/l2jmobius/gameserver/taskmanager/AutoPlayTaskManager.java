@@ -16,6 +16,7 @@
  */
 package org.l2jmobius.gameserver.taskmanager;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,6 +26,7 @@ import org.l2jmobius.gameserver.ai.CtrlIntention;
 import org.l2jmobius.gameserver.enums.Race;
 import org.l2jmobius.gameserver.geoengine.GeoEngine;
 import org.l2jmobius.gameserver.model.Location;
+import org.l2jmobius.gameserver.model.Party;
 import org.l2jmobius.gameserver.model.World;
 import org.l2jmobius.gameserver.model.WorldObject;
 import org.l2jmobius.gameserver.model.actor.Creature;
@@ -42,6 +44,7 @@ import org.l2jmobius.gameserver.util.Util;
 public class AutoPlayTaskManager
 {
 	private static final Set<Set<Player>> POOLS = ConcurrentHashMap.newKeySet();
+	private static final Map<Player, Integer> IDLE_COUNT = new ConcurrentHashMap<>();
 	private static final int POOL_SIZE = 300;
 	private static final int TASK_DELAY = 300;
 	
@@ -96,6 +99,17 @@ public class AutoPlayTaskManager
 						// We take granted that mage classes do not auto hit.
 						if (isMageCaster(player))
 						{
+							// Logic adjustment for summons not attacking when in offline play.
+							if (player.isOfflinePlay() && player.hasSummon())
+							{
+								for (Summon summon : player.getServitors().values())
+								{
+									if (summon.hasAI() && !summon.isMoving() && !summon.isDisabled() && (summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_ATTACK) && (summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_CAST) && creature.isAutoAttackable(player) && GeoEngine.getInstance().canSeeTarget(player, creature))
+									{
+										summon.getAI().setIntention(CtrlIntention.AI_INTENTION_ATTACK, creature);
+									}
+								}
+							}
 							continue PLAY;
 						}
 						
@@ -121,29 +135,41 @@ public class AutoPlayTaskManager
 								final Weapon weapon = player.getActiveWeaponItem();
 								if (weapon != null)
 								{
-									final boolean ranged = weapon.getItemType().isRanged();
-									final double angle = Util.calculateHeadingFrom(player, creature);
-									final double radian = Math.toRadians(angle);
-									final double course = Math.toRadians(180);
-									final double distance = (ranged ? player.getCollisionRadius() : player.getCollisionRadius() + creature.getCollisionRadius()) * 2;
-									final int x1 = (int) (Math.cos(Math.PI + radian + course) * distance);
-									final int y1 = (int) (Math.sin(Math.PI + radian + course) * distance);
-									final Location location;
-									if (ranged)
+									final int idleCount = IDLE_COUNT.getOrDefault(player, 0);
+									if (idleCount > 10)
 									{
-										location = new Location(player.getX() + x1, player.getY() + y1, player.getZ());
+										final boolean ranged = weapon.getItemType().isRanged();
+										final double angle = Util.calculateHeadingFrom(player, creature);
+										final double radian = Math.toRadians(angle);
+										final double course = Math.toRadians(180);
+										final double distance = (ranged ? player.getCollisionRadius() : player.getCollisionRadius() + creature.getCollisionRadius()) * 2;
+										final int x1 = (int) (Math.cos(Math.PI + radian + course) * distance);
+										final int y1 = (int) (Math.sin(Math.PI + radian + course) * distance);
+										final Location location;
+										if (ranged)
+										{
+											location = new Location(player.getX() + x1, player.getY() + y1, player.getZ());
+										}
+										else
+										{
+											location = new Location(creature.getX() + x1, creature.getY() + y1, player.getZ());
+										}
+										player.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, location);
+										IDLE_COUNT.remove(player);
 									}
 									else
 									{
-										location = new Location(creature.getX() + x1, creature.getY() + y1, player.getZ());
+										IDLE_COUNT.put(player, idleCount + 1);
 									}
-									player.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, location);
 								}
 							}
 						}
 						continue PLAY;
 					}
 				}
+				
+				// Reset idle count.
+				IDLE_COUNT.remove(player);
 				
 				// Pickup.
 				if (player.getAutoPlaySettings().doPickup())
@@ -179,32 +205,55 @@ public class AutoPlayTaskManager
 				
 				// Find target.
 				Creature creature = null;
-				double closestDistance = Double.MAX_VALUE;
-				TARGET: for (Creature nearby : World.getInstance().getVisibleObjectsInRange(player, Creature.class, player.getAutoPlaySettings().isShortRange() && (targetMode != 2 /* Characters */) ? 600 : 1400))
+				final Party party = player.getParty();
+				final Player leader = party == null ? null : party.getLeader();
+				if (Config.ENABLE_AUTO_ASSIST && (party != null) && (leader != null) && (leader != player) && !leader.isDead())
 				{
-					// Skip unavailable creatures.
-					if ((nearby == null) || nearby.isAlikeDead())
+					if (leader.calculateDistance3D(player) < (Config.ALT_PARTY_RANGE * 2 /* 2? */))
 					{
-						continue TARGET;
-					}
-					// Check creature target.
-					if (player.getAutoPlaySettings().isRespectfulHunting() && !nearby.isPlayable() && (nearby.getTarget() != null) && (nearby.getTarget() != player) && !player.getServitors().containsKey(nearby.getTarget().getObjectId()))
-					{
-						continue TARGET;
-					}
-					// Check next target mode.
-					if (!isTargetModeValid(targetMode, player, nearby))
-					{
-						continue TARGET;
-					}
-					// Check if creature is reachable.
-					if ((Math.abs(player.getZ() - nearby.getZ()) < 180) && GeoEngine.getInstance().canSeeTarget(player, nearby) && GeoEngine.getInstance().canMoveToTarget(player.getX(), player.getY(), player.getZ(), nearby.getX(), nearby.getY(), nearby.getZ(), player.getInstanceWorld()))
-					{
-						final double creatureDistance = player.calculateDistance2D(nearby);
-						if (creatureDistance < closestDistance)
+						final WorldObject leaderTarget = leader.getTarget();
+						if ((leaderTarget != null) && (leaderTarget.isAttackable() || (leaderTarget.isPlayable() && !party.containsPlayer(leaderTarget.getActingPlayer()))))
 						{
-							creature = nearby;
-							closestDistance = creatureDistance;
+							creature = (Creature) leaderTarget;
+						}
+						else if ((player.getAI().getIntention() != CtrlIntention.AI_INTENTION_FOLLOW) && !player.isDisabled())
+						{
+							player.getAI().setIntention(CtrlIntention.AI_INTENTION_FOLLOW, leader);
+						}
+					}
+				}
+				else
+				{
+					double closestDistance = Double.MAX_VALUE;
+					TARGET: for (Creature nearby : World.getInstance().getVisibleObjectsInRange(player, Creature.class, player.getAutoPlaySettings().isShortRange() && (targetMode != 2 /* Characters */) ? 600 : 1400))
+					{
+						// Skip unavailable creatures.
+						if ((nearby == null) || nearby.isAlikeDead())
+						{
+							continue TARGET;
+						}
+						
+						// Check creature target.
+						if (player.getAutoPlaySettings().isRespectfulHunting() && !nearby.isPlayable() && (nearby.getTarget() != null) && (nearby.getTarget() != player) && !player.getServitors().containsKey(nearby.getTarget().getObjectId()))
+						{
+							continue TARGET;
+						}
+						
+						// Check next target mode.
+						if (!isTargetModeValid(targetMode, player, nearby))
+						{
+							continue TARGET;
+						}
+						
+						// Check if creature is reachable.
+						if ((Math.abs(player.getZ() - nearby.getZ()) < 180) && GeoEngine.getInstance().canSeeTarget(player, nearby) && GeoEngine.getInstance().canMoveToTarget(player.getX(), player.getY(), player.getZ(), nearby.getX(), nearby.getY(), nearby.getZ(), player.getInstanceWorld()))
+						{
+							final double creatureDistance = player.calculateDistance2D(nearby);
+							if (creatureDistance < closestDistance)
+							{
+								creature = nearby;
+								closestDistance = creatureDistance;
+							}
 						}
 					}
 				}
@@ -303,6 +352,7 @@ public class AutoPlayTaskManager
 				{
 					player.getPet().followOwner();
 				}
+				IDLE_COUNT.remove(player);
 				return;
 			}
 		}

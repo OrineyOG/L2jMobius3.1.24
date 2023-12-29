@@ -68,4 +68,10 @@ public class ServitorMode implements IPlayerActionHandler
 			}
 		}
 	}
+	
+	@Override
+	public boolean isPetAction()
+	{
+		return true;
+	}
 }

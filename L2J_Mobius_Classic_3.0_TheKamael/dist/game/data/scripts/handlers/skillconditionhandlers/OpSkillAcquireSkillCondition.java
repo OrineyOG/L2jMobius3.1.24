@@ -39,10 +39,11 @@ public class OpSkillAcquireSkillCondition implements ISkillCondition
 	@Override
 	public boolean canUse(Creature caster, Skill skill, WorldObject target)
 	{
-		if (!target.isCreature())
+		if ((target == null) || !target.isCreature())
 		{
 			return false;
 		}
+		
 		final int skillLevel = ((Creature) target).getSkillLevel(_skillId);
 		return _hasLearned ? skillLevel != 0 : skillLevel == 0;
 	}

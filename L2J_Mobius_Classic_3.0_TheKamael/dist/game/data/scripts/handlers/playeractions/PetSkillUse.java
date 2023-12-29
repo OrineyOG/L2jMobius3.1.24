@@ -77,4 +77,10 @@ public class PetSkillUse implements IPlayerActionHandler
 			}
 		}
 	}
+	
+	@Override
+	public boolean isPetAction()
+	{
+		return true;
+	}
 }

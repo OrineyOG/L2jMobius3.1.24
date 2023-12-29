@@ -47,4 +47,10 @@ public class ServitorStop implements IPlayerActionHandler
 			s.cancelAction();
 		});
 	}
+	
+	@Override
+	public boolean isPetAction()
+	{
+		return true;
+	}
 }

@@ -67,7 +67,7 @@ public class SummonInfo extends AbstractMaskPacket<NpcInfoType>
 			_masks[2] |= 0x10;
 			addComponentType(NpcInfoType.NAME);
 		}
-		addComponentType(NpcInfoType.ATTACKABLE, NpcInfoType.RELATIONS, NpcInfoType.TITLE, NpcInfoType.ID, NpcInfoType.POSITION, NpcInfoType.ALIVE, NpcInfoType.RUNNING, NpcInfoType.PVP_FLAG);
+		addComponentType(NpcInfoType.ATTACKABLE, NpcInfoType.RELATIONS, NpcInfoType.TITLE, NpcInfoType.ID, NpcInfoType.POSITION, NpcInfoType.STOP_MODE, NpcInfoType.MOVE_MODE, NpcInfoType.PVP_FLAG);
 		if (summon.getHeading() > 0)
 		{
 			addComponentType(NpcInfoType.HEADING);
@@ -141,7 +141,7 @@ public class SummonInfo extends AbstractMaskPacket<NpcInfoType>
 			_allyId = summon.getOwner().getAppearance().getVisibleAllyCrestId();
 			addComponentType(NpcInfoType.CLAN);
 		}
-		addComponentType(NpcInfoType.COLOR_EFFECT);
+		addComponentType(NpcInfoType.PET_EVOLUTION_ID);
 		// TODO: Confirm me
 		if (summon.isInCombat())
 		{
@@ -241,9 +241,9 @@ public class SummonInfo extends AbstractMaskPacket<NpcInfoType>
 		{
 			writeInt(_summon.getHeading());
 		}
-		if (containsMask(NpcInfoType.UNKNOWN2))
+		if (containsMask(NpcInfoType.VEHICLE_ID))
 		{
-			writeInt(0); // Unknown
+			writeInt(0); // Vehicle object id.
 		}
 		if (containsMask(NpcInfoType.ATK_CAST_SPEED))
 		{
@@ -261,11 +261,11 @@ public class SummonInfo extends AbstractMaskPacket<NpcInfoType>
 			writeInt(_summon.getArmor()); // Armor id?
 			writeInt(0);
 		}
-		if (containsMask(NpcInfoType.ALIVE))
+		if (containsMask(NpcInfoType.STOP_MODE))
 		{
 			writeByte(!_summon.isDead());
 		}
-		if (containsMask(NpcInfoType.RUNNING))
+		if (containsMask(NpcInfoType.MOVE_MODE))
 		{
 			writeByte(_summon.isRunning());
 		}
@@ -289,9 +289,8 @@ public class SummonInfo extends AbstractMaskPacket<NpcInfoType>
 		{
 			writeInt(0); // Player ObjectId with Decoy
 		}
-		if (containsMask(NpcInfoType.COLOR_EFFECT))
+		if (containsMask(NpcInfoType.PET_EVOLUTION_ID))
 		{
-			// No visual effect
 			writeInt(0); // Unknown
 		}
 		if (containsMask(NpcInfoType.DISPLAY_EFFECT))
@@ -322,7 +321,7 @@ public class SummonInfo extends AbstractMaskPacket<NpcInfoType>
 		{
 			writeByte(_summon.isShowSummonAnimation() ? 2 : 0); // 2 - do some animation on spawn
 		}
-		if (containsMask(NpcInfoType.UNKNOWN12))
+		if (containsMask(NpcInfoType.FOLLOW_INFO))
 		{
 			writeInt(0);
 			writeInt(0);

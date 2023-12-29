@@ -47,8 +47,8 @@ public enum CommissionTreeType
 		CommissionItemType.SPEAR,
 		CommissionItemType.OTHER_WEAPON),
 	ARMOR(1, CommissionItemType.HELMET, CommissionItemType.ARMOR_TOP, CommissionItemType.ARMOR_PANTS, CommissionItemType.FULL_BODY, CommissionItemType.GLOVES, CommissionItemType.FEET, CommissionItemType.SHIELD, CommissionItemType.SIGIL, CommissionItemType.UNDERWEAR, CommissionItemType.CLOAK),
-	ACCESSORY(2, CommissionItemType.RING, CommissionItemType.EARRING, CommissionItemType.NECKLACE, CommissionItemType.BELT, CommissionItemType.BRACELET, CommissionItemType.HAIR_ACCESSORY),
-	SUPPLIES(3, CommissionItemType.POTION, CommissionItemType.SCROLL_ENCHANT_WEAPON, CommissionItemType.SCROLL_ENCHANT_ARMOR, CommissionItemType.SCROLL_OTHER, CommissionItemType.SOULSHOT, CommissionItemType.SPIRITSHOT),
+	ACCESSORY(2, CommissionItemType.RING, CommissionItemType.EARRING, CommissionItemType.NECKLACE, CommissionItemType.BELT, CommissionItemType.BRACELET, CommissionItemType.AGATHION, CommissionItemType.HAIR_ACCESSORY, CommissionItemType.BROOCH_JEWEL, CommissionItemType.ARTIFACT),
+	SUPPLIES(3, CommissionItemType.POTION, CommissionItemType.SCROLL_ENCHANT_WEAPON, CommissionItemType.SCROLL_ENCHANT_ARMOR, CommissionItemType.SCROLL_OTHER, CommissionItemType.SOULSHOT, CommissionItemType.SPIRITSHOT, CommissionItemType.OTHER_SUPPLIES),
 	PET_GOODS(4, CommissionItemType.PET_EQUIPMENT, CommissionItemType.PET_SUPPLIES),
 	MISC(
 		5,

@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS `character_ranking_history` (
   `ranking` int(20) NOT NULL,
   `exp` bigint(20) NOT NULL,
   PRIMARY KEY (`charId`,`day`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;

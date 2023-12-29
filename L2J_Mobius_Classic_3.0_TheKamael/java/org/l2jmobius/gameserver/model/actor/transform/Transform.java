@@ -122,7 +122,7 @@ public class Transform implements IIdentifiable
 		return _title;
 	}
 	
-	private TransformTemplate getTemplate(Creature creature)
+	public TransformTemplate getTemplate(Creature creature)
 	{
 		if (creature.isPlayer())
 		{
@@ -318,7 +318,7 @@ public class Transform implements IIdentifiable
 				// Send basic action list.
 				if (template.hasBasicActionList())
 				{
-					player.sendPacket(template.getBasicActionList());
+					player.sendPacket(new ExBasicActionList(template.getBasicActionList()));
 				}
 				
 				player.getEffectList().stopAllToggles();

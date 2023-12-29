@@ -4,4 +4,6 @@ CREATE TABLE IF NOT EXISTS `item_variations` (
   `option1` INT(11) NOT NULL,
   `option2` INT(11) NOT NULL,
   PRIMARY KEY (`itemId`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+
+CREATE INDEX idx_itemId ON item_variations (itemId);

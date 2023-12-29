@@ -11,6 +11,5 @@ CREATE TABLE `character_spirits`
     `crit_rate_points`   TINYINT      NOT NULL DEFAULT 0,
     `crit_damage_points` TINYINT      NOT NULL DEFAULT 0,
     `in_use`             BOOLEAN      NOT NULL DEFAULT FALSE,
-    PRIMARY KEY (`charId`, `type`),
-    FOREIGN KEY FK_CHARACTER_SPIRITS (`charId`) REFERENCES characters (`charId`) ON DELETE CASCADE
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+    PRIMARY KEY (`charId`, `type`)
+) DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;

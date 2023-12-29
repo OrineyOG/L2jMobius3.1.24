@@ -94,6 +94,7 @@ public enum Stat
 	REAR_DAMAGE_RATE("rearDamage"),
 	AUTO_ATTACK_DAMAGE_BONUS("autoAttackDamageBonus"),
 	TRUE_DAMAGE("TrueDamage"),
+	IGNORE_REDUCE_DAMAGE("ignoreReduceDamage"),
 	
 	// ELEMENTAL SPIRITS
 	ELEMENTAL_SPIRIT_FIRE_ATTACK("elementalSpiritFireAttack"),
@@ -147,7 +148,8 @@ public enum Stat
 	SHIELD_DEFENCE_RATE("rShld", new ShieldDefenceRateFinalizer()),
 	CRITICAL_RATE("rCrit", new PCriticalRateFinalizer(), MathUtil::add, MathUtil::add, MathUtil::addMul, 0, 0, 0),
 	CRITICAL_RATE_SKILL("physicalSkillCriticalRate"),
-	MAX_MAGIC_CRITICAL_RATE("maxMagicCritRate"),
+	ADD_MAX_MAGIC_CRITICAL_RATE("addMaxMagicCritRate"),
+	ADD_MAX_PHYSICAL_CRITICAL_RATE("addMaxPhysicalCritRate"),
 	MAGIC_CRITICAL_RATE("mCritRate", new MCritRateFinalizer()),
 	MAGIC_CRITICAL_RATE_BY_CRITICAL_RATE("mCritRateByRCrit", Stat::defaultValue, MathUtil::add, MathUtil::mul, MathUtil::addMul, 0, 0, 0),
 	BLOW_RATE("blowRate"),

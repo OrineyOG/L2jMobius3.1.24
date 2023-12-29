@@ -16,34 +16,52 @@
  */
 package handlers.playeractions;
 
+import org.l2jmobius.gameserver.ai.CtrlIntention;
 import org.l2jmobius.gameserver.handler.IPlayerActionHandler;
 import org.l2jmobius.gameserver.model.ActionDataHolder;
+import org.l2jmobius.gameserver.model.WorldObject;
 import org.l2jmobius.gameserver.model.actor.Player;
 import org.l2jmobius.gameserver.model.actor.Summon;
 import org.l2jmobius.gameserver.network.SystemMessageId;
 
 /**
  * Servitor Attack player action handler.
- * @author St3eT
+ * @author Mobius
  */
 public class ServitorAttack implements IPlayerActionHandler
 {
 	@Override
 	public void useAction(Player player, ActionDataHolder data, boolean ctrlPressed, boolean shiftPressed)
 	{
-		if (player.hasServitors())
-		{
-			for (Summon summon : player.getServitors().values())
-			{
-				if (summon.canAttack(player.getTarget(), ctrlPressed))
-				{
-					summon.doAttack(player.getTarget());
-				}
-			}
-		}
-		else
+		if (!player.hasServitors())
 		{
 			player.sendPacket(SystemMessageId.YOU_DO_NOT_HAVE_A_SERVITOR);
+			return;
 		}
+		
+		final WorldObject target = player.getTarget();
+		if (target == null)
+		{
+			return;
+		}
+		
+		final boolean targetOutOfRange = player.calculateDistance3D(target) > 3000;
+		for (Summon summon : player.getServitors().values())
+		{
+			if (targetOutOfRange)
+			{
+				summon.getAI().setIntention(CtrlIntention.AI_INTENTION_FOLLOW, player);
+			}
+			else if (summon.canAttack(target, ctrlPressed))
+			{
+				summon.doAttack(target);
+			}
+		}
+	}
+	
+	@Override
+	public boolean isPetAction()
+	{
+		return true;
 	}
 }

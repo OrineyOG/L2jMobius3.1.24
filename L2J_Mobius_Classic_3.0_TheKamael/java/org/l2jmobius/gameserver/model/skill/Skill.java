@@ -173,6 +173,7 @@ public class Skill implements IIdentifiable
 	private final Map<EffectScope, List<AbstractEffect>> _effectLists = new EnumMap<>(EffectScope.class);
 	
 	private final boolean _isDebuff;
+	private final boolean BypassDebuffProtection;
 	private final boolean _isSelfbuff;
 	
 	private final boolean _isSuicideAttack;
@@ -238,6 +239,7 @@ public class Skill implements IIdentifiable
 		_castRange = set.getInt("castRange", -1);
 		_effectRange = set.getInt("effectRange", -1);
 		_abnormalLevel = set.getInt("abnormalLevel", 0);
+		BypassDebuffProtection = set.getBoolean("isBypassDebuff", false);
 		_abnormalType = set.getEnum("abnormalType", AbnormalType.class, AbnormalType.NONE);
 		_subordinationAbnormalType = set.getEnum("subordinationAbnormalType", AbnormalType.class, AbnormalType.NONE);
 		int abnormalTime = set.getInt("abnormalTime", 0);
@@ -1586,6 +1588,11 @@ public class Skill implements IIdentifiable
 	public boolean isExcludedFromCheck()
 	{
 		return _excludedFromCheck;
+	}
+	
+	public boolean shouldBypassDebuffProtection()
+	{
+		return BypassDebuffProtection;
 	}
 	
 	public boolean isWithoutAction()

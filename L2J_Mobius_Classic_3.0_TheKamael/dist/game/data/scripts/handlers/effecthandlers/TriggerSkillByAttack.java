@@ -182,6 +182,11 @@ public class TriggerSkillByAttack extends AbstractEffect
 			else
 			{
 				triggerSkill = SkillData.getInstance().getSkill(_skill.getSkillId(), Math.min(_skillLevelScaleTo, buffInfo.getSkill().getLevel() + 1));
+				
+				if (event.getAttacker().isSkillDisabled(buffInfo.getSkill()))
+				{
+					return;
+				}
 			}
 			
 			if ((buffInfo == null) || (buffInfo.getSkill().getLevel() < triggerSkill.getLevel()))

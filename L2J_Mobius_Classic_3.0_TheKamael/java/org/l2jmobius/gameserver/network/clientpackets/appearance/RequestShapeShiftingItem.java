@@ -229,6 +229,8 @@ public class RequestShapeShiftingItem implements ClientPacket
 			}
 			case FIXED:
 			{
+				targetItem.removeVisualSetSkills();
+				
 				if (appearanceStone.getVisualIds().isEmpty())
 				{
 					extracItemId = appearanceStone.getVisualId();
@@ -245,6 +247,8 @@ public class RequestShapeShiftingItem implements ClientPacket
 						targetItem.getVariables().set(ItemVariables.VISUAL_APPEARANCE_STONE_ID, appearanceStone.getId());
 					}
 				}
+				
+				targetItem.applyVisualSetSkills();
 				break;
 			}
 		}

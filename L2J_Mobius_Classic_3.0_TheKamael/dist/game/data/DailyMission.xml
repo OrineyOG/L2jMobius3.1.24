@@ -736,7 +736,7 @@
 		<items>
 			<item id="49778" count="1" />
 			<item id="49495" count="1" />
-			<item id="90907" count="5" />
+			<item id="49487" count="5" />
 		</items>
 	</reward>
 	<reward id="4001" reward_id="1078" name="Reaching Level 20" requiredCompletion="20">
@@ -747,7 +747,7 @@
 		<items>
 			<item id="49488" count="10" />
 			<item id="49778" count="8" />
-			<item id="90907" count="5" />
+			<item id="49487" count="5" />
 		</items>
 	</reward>
 	<reward id="4002" reward_id="1079" name="Reaching Level 30" requiredCompletion="30">
@@ -758,7 +758,7 @@
 		<items>
 			<item id="49488" count="20" />
 			<item id="49779" count="9" />
-			<item id="90907" count="15" />
+			<item id="49487" count="15" />
 		</items>
 	</reward>
 	<reward id="4003" reward_id="1080" name="Reaching Level 40" requiredCompletion="40">
@@ -768,7 +768,7 @@
 		</handler>
 		<items>
 			<item id="49488" count="30" />
-			<item id="90907" count="20" />
+			<item id="49487" count="20" />
 		</items>
 	</reward>
 	<reward id="4004" reward_id="1081" name="Reaching Level 45" requiredCompletion="45">

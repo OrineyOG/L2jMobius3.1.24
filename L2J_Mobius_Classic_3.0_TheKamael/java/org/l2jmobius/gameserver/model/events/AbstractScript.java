@@ -43,9 +43,9 @@ import org.l2jmobius.gameserver.enums.AttributeType;
 import org.l2jmobius.gameserver.enums.Movie;
 import org.l2jmobius.gameserver.enums.QuestSound;
 import org.l2jmobius.gameserver.instancemanager.CastleManager;
-import org.l2jmobius.gameserver.instancemanager.ItemCommissionManager;
 import org.l2jmobius.gameserver.instancemanager.FortManager;
 import org.l2jmobius.gameserver.instancemanager.InstanceManager;
+import org.l2jmobius.gameserver.instancemanager.ItemCommissionManager;
 import org.l2jmobius.gameserver.instancemanager.MailManager;
 import org.l2jmobius.gameserver.instancemanager.PcCafePointsManager;
 import org.l2jmobius.gameserver.instancemanager.ZoneManager;
@@ -2214,6 +2214,17 @@ public abstract class AbstractScript extends ManagedScript implements IEventTime
 			if (summoner != null)
 			{
 				summoner.addSummonedNpc(npc);
+			}
+			
+			// Retain monster original position if ENABLE_RANDOM_MONSTER_SPAWNS is enabled.
+			if (Config.ENABLE_RANDOM_MONSTER_SPAWNS && !randomOffset && npc.isMonster())
+			{
+				spawn.setXYZ(x, y, zValue);
+				npc.setXYZ(x, y, zValue);
+				if (heading > -1)
+				{
+					npc.setHeading(heading);
+				}
 			}
 			
 			// Fixes invisible NPCs spawned by script.

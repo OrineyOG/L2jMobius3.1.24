@@ -16,39 +16,61 @@
  */
 package handlers.playeractions;
 
+import org.l2jmobius.gameserver.ai.CtrlIntention;
 import org.l2jmobius.gameserver.handler.IPlayerActionHandler;
 import org.l2jmobius.gameserver.model.ActionDataHolder;
+import org.l2jmobius.gameserver.model.WorldObject;
 import org.l2jmobius.gameserver.model.actor.Player;
 import org.l2jmobius.gameserver.model.actor.instance.Pet;
 import org.l2jmobius.gameserver.network.SystemMessageId;
 
 /**
  * Pet attack player action handler.
- * @author Nik
+ * @author Mobius
  */
 public class PetAttack implements IPlayerActionHandler
 {
 	@Override
 	public void useAction(Player player, ActionDataHolder data, boolean ctrlPressed, boolean shiftPressed)
 	{
-		if ((player.getPet() == null) || !player.getPet().isPet())
+		final Pet pet = player.getPet();
+		if ((pet == null) || !pet.isPet())
 		{
 			player.sendPacket(SystemMessageId.YOU_DO_NOT_HAVE_A_PET);
 			return;
 		}
 		
-		final Pet pet = player.getPet();
 		if (pet.isUncontrollable())
 		{
 			player.sendPacket(SystemMessageId.WHEN_YOUR_PET_S_HUNGER_GAUGE_IS_AT_0_YOU_CANNOT_USE_YOUR_PET);
+			return;
 		}
-		else if (pet.isBetrayed())
+		
+		if (pet.isBetrayed())
 		{
 			player.sendPacket(SystemMessageId.YOUR_SERVITOR_IS_UNRESPONSIVE_AND_WILL_NOT_OBEY_ANY_ORDERS);
+			return;
 		}
-		else if (pet.canAttack(player.getTarget(), ctrlPressed))
+		
+		final WorldObject target = player.getTarget();
+		if (target == null)
 		{
-			pet.doAttack(player.getTarget());
+			return;
 		}
+		
+		if (player.calculateDistance3D(target) > 3000)
+		{
+			pet.getAI().setIntention(CtrlIntention.AI_INTENTION_FOLLOW, player);
+		}
+		else if (pet.canAttack(target, ctrlPressed))
+		{
+			pet.doAttack(target);
+		}
+	}
+	
+	@Override
+	public boolean isPetAction()
+	{
+		return true;
 	}
 }

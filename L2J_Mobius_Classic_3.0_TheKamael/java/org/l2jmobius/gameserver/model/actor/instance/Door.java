@@ -596,6 +596,8 @@ public class Door extends Creature
 	{
 		if (isVisibleFor(player))
 		{
+			player.sendPacket(new StaticObjectInfo(this, player.isGM()));
+			player.sendPacket(new DoorStatusUpdate(this));
 			if (getEmitter() > 0)
 			{
 				if (_isInverted)
@@ -607,7 +609,6 @@ public class Door extends Creature
 					player.sendPacket(new OnEventTrigger(getEmitter(), _open));
 				}
 			}
-			player.sendPacket(new StaticObjectInfo(this, player.isGM()));
 		}
 	}
 	

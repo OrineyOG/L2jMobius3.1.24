@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS `npc_respawns` (
   `currentHp` double unsigned NOT NULL,
   `currentMp` double unsigned NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;

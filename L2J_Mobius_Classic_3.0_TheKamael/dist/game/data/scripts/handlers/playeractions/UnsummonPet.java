@@ -62,4 +62,10 @@ public class UnsummonPet implements IPlayerActionHandler
 			pet.unSummon(player);
 		}
 	}
+	
+	@Override
+	public boolean isPetAction()
+	{
+		return true;
+	}
 }

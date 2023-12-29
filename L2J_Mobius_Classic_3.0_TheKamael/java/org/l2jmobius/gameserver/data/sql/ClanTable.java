@@ -420,7 +420,6 @@ public class ClanTable
 	
 	private void restoreClanWars()
 	{
-		final long currentTime = System.currentTimeMillis();
 		try (Connection con = DatabaseFactory.getConnection();
 			Statement statement = con.createStatement();
 			ResultSet rset = statement.executeQuery("SELECT clan1, clan2, clan1Kill, clan2Kill, winnerClan, startTime, endTime, state FROM clan_wars"))
@@ -431,14 +430,8 @@ public class ClanTable
 				final Clan attacked = getClan(rset.getInt("clan2"));
 				if ((attacker != null) && (attacked != null))
 				{
-					final long endTime = rset.getLong("endTime");
-					if (endTime < currentTime)
-					{
-						continue;
-					}
-					
 					final ClanWarState state = ClanWarState.values()[rset.getInt("state")];
-					final ClanWar clanWar = new ClanWar(attacker, attacked, rset.getInt("clan1Kill"), rset.getInt("clan2Kill"), rset.getInt("winnerClan"), rset.getLong("startTime"), endTime, state);
+					final ClanWar clanWar = new ClanWar(attacker, attacked, rset.getInt("clan1Kill"), rset.getInt("clan2Kill"), rset.getInt("winnerClan"), rset.getLong("startTime"), rset.getLong("endTime"), state);
 					attacker.addWar(attacked.getId(), clanWar);
 					attacked.addWar(attacker.getId(), clanWar);
 				}

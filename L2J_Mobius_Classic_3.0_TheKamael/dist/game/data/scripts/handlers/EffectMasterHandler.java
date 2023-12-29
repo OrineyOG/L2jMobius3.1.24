@@ -1,16 +1,16 @@
 /*
  * This file is part of the L2J Mobius project.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -42,6 +42,8 @@ public class EffectMasterHandler
 		EffectHandler.getInstance().registerHandler("AdditionalPotionHp", AdditionalPotionHp::new);
 		EffectHandler.getInstance().registerHandler("AdditionalPotionMp", AdditionalPotionMp::new);
 		EffectHandler.getInstance().registerHandler("AddPcCafePoints", AddPcCafePoints::new);
+		EffectHandler.getInstance().registerHandler("AddMaxPhysicalCriticalRate", AddMaxPhysicalCriticalRate::new);
+		EffectHandler.getInstance().registerHandler("AddMaxMagicCriticalRate", AddMaxMagicCriticalRate::new);
 		EffectHandler.getInstance().registerHandler("AddSkillBySkill", AddSkillBySkill::new);
 		EffectHandler.getInstance().registerHandler("AddTeleportBookmarkSlot", AddTeleportBookmarkSlot::new);
 		EffectHandler.getInstance().registerHandler("AgathionSlot", AgathionSlot::new);
@@ -192,6 +194,7 @@ public class EffectMasterHandler
 		EffectHandler.getInstance().registerHandler("HpRegen", HpRegen::new);
 		EffectHandler.getInstance().registerHandler("HpToOwner", HpToOwner::new);
 		EffectHandler.getInstance().registerHandler("IgnoreDeath", IgnoreDeath::new);
+		EffectHandler.getInstance().registerHandler("IgnoreReduceDamage", IgnoreReduceDamage::new);
 		EffectHandler.getInstance().registerHandler("ImmobileDamageBonus", ImmobileDamageBonus::new);
 		EffectHandler.getInstance().registerHandler("ImmobileDamageResist", ImmobileDamageResist::new);
 		EffectHandler.getInstance().registerHandler("ImmobilePetBuff", ImmobilePetBuff::new);
@@ -232,7 +235,6 @@ public class EffectMasterHandler
 		EffectHandler.getInstance().registerHandler("MAtkByPAtk", MAtkByPAtk::new);
 		EffectHandler.getInstance().registerHandler("MaxCp", MaxCp::new);
 		EffectHandler.getInstance().registerHandler("MaxHp", MaxHp::new);
-		EffectHandler.getInstance().registerHandler("MaxMagicCriticalRate", MaxMagicCriticalRate::new);
 		EffectHandler.getInstance().registerHandler("MaxMp", MaxMp::new);
 		EffectHandler.getInstance().registerHandler("ModifyVital", ModifyVital::new);
 		EffectHandler.getInstance().registerHandler("Mp", Mp::new);

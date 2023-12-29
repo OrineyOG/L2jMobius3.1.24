@@ -30,7 +30,6 @@ import org.l2jmobius.gameserver.model.holders.SkillHolder;
 import org.l2jmobius.gameserver.model.item.type.WeaponType;
 import org.l2jmobius.gameserver.model.itemcontainer.Inventory;
 import org.l2jmobius.gameserver.model.stats.Stat;
-import org.l2jmobius.gameserver.network.serverpackets.ExBasicActionList;
 
 /**
  * @author UnAfraid
@@ -45,8 +44,7 @@ public class TransformTemplate
 	private List<AdditionalItemHolder> _additionalItems;
 	private Map<Integer, Integer> _baseDefense;
 	private Map<Integer, Double> _baseStats;
-	
-	private ExBasicActionList _list;
+	private int[] _actions;
 	private final Map<Integer, TransformLevelData> _data = new LinkedHashMap<>(100);
 	
 	public TransformTemplate(StatSet set)
@@ -282,19 +280,19 @@ public class TransformTemplate
 		return _additionalItems != null ? _additionalItems : Collections.emptyList();
 	}
 	
-	public void setBasicActionList(ExBasicActionList list)
+	public void setBasicActionList(int[] actions)
 	{
-		_list = list;
+		_actions = actions;
 	}
 	
-	public ExBasicActionList getBasicActionList()
+	public int[] getBasicActionList()
 	{
-		return _list;
+		return _actions;
 	}
 	
 	public boolean hasBasicActionList()
 	{
-		return _list != null;
+		return _actions != null;
 	}
 	
 	public void addLevelData(TransformLevelData data)

@@ -61,7 +61,7 @@ public class NpcInfo extends AbstractMaskPacket<NpcInfoType>
 	{
 		_npc = npc;
 		_abnormalVisualEffects = npc.getEffectList().getCurrentAbnormalVisualEffects();
-		addComponentType(NpcInfoType.ATTACKABLE, NpcInfoType.RELATIONS, NpcInfoType.ID, NpcInfoType.POSITION, NpcInfoType.ALIVE, NpcInfoType.RUNNING);
+		addComponentType(NpcInfoType.ATTACKABLE, NpcInfoType.RELATIONS, NpcInfoType.ID, NpcInfoType.POSITION, NpcInfoType.STOP_MODE, NpcInfoType.MOVE_MODE);
 		if (npc.getHeading() > 0)
 		{
 			addComponentType(NpcInfoType.HEADING);
@@ -163,7 +163,7 @@ public class NpcInfo extends AbstractMaskPacket<NpcInfoType>
 				addComponentType(NpcInfoType.CLAN);
 			}
 		}
-		addComponentType(NpcInfoType.COLOR_EFFECT);
+		addComponentType(NpcInfoType.PET_EVOLUTION_ID);
 		if (npc.getPvpFlag() > 0)
 		{
 			addComponentType(NpcInfoType.PVP_FLAG);
@@ -323,9 +323,9 @@ public class NpcInfo extends AbstractMaskPacket<NpcInfoType>
 		{
 			writeInt(_npc.getHeading());
 		}
-		if (containsMask(NpcInfoType.UNKNOWN2))
+		if (containsMask(NpcInfoType.VEHICLE_ID))
 		{
-			writeInt(0); // Unknown
+			writeInt(0); // Vehicle object id.
 		}
 		if (containsMask(NpcInfoType.ATK_CAST_SPEED))
 		{
@@ -343,11 +343,11 @@ public class NpcInfo extends AbstractMaskPacket<NpcInfoType>
 			writeInt(0); // Armor id?
 			writeInt(_npc.getLeftHandItem());
 		}
-		if (containsMask(NpcInfoType.ALIVE))
+		if (containsMask(NpcInfoType.STOP_MODE))
 		{
 			writeByte(!_npc.isDead());
 		}
-		if (containsMask(NpcInfoType.RUNNING))
+		if (containsMask(NpcInfoType.MOVE_MODE))
 		{
 			writeByte(_npc.isRunning());
 		}
@@ -371,9 +371,9 @@ public class NpcInfo extends AbstractMaskPacket<NpcInfoType>
 		{
 			writeInt(_npc.getCloneObjId()); // Player ObjectId with Decoy
 		}
-		if (containsMask(NpcInfoType.COLOR_EFFECT))
+		if (containsMask(NpcInfoType.PET_EVOLUTION_ID))
 		{
-			writeInt(_npc.getColorEffect()); // Color effect
+			writeInt(0); // Unknown
 		}
 		if (containsMask(NpcInfoType.DISPLAY_EFFECT))
 		{
@@ -403,7 +403,7 @@ public class NpcInfo extends AbstractMaskPacket<NpcInfoType>
 		{
 			writeByte(0); // 2 - do some animation on spawn
 		}
-		if (containsMask(NpcInfoType.UNKNOWN12))
+		if (containsMask(NpcInfoType.FOLLOW_INFO))
 		{
 			writeInt(0);
 			writeInt(0);

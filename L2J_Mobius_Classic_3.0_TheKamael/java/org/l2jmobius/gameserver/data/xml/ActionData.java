@@ -88,6 +88,11 @@ public class ActionData implements IXmlReader
 		return _actionSkillsData.getOrDefault(skillId, -1);
 	}
 	
+	public int[] getActionIdList()
+	{
+		return _actionData.keySet().stream().mapToInt(Number::intValue).toArray();
+	}
+	
 	/**
 	 * Gets the single instance of ActionData.
 	 * @return single instance of ActionData

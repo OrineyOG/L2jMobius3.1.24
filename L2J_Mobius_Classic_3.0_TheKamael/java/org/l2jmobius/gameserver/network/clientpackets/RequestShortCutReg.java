@@ -87,7 +87,7 @@ public class RequestShortCutReg implements ClientPacket
 		else if (_page == 23)
 		{
 			final Item item = player.getInventory().getItemByObjectId(_id);
-			if ((item != null) && !item.isPotion())
+			if (((item != null) && !item.isPotion()) || (_type == ShortcutType.ACTION))
 			{
 				return;
 			}
@@ -148,7 +148,7 @@ public class RequestShortCutReg implements ClientPacket
 		final Shortcut sc = new Shortcut(_slot, _page, _type, _id, _level, _subLevel, _characterType);
 		sc.setAutoUse(_active);
 		player.registerShortCut(sc);
-		player.sendPacket(new ShortCutRegister(sc));
+		player.sendPacket(new ShortCutRegister(sc, player));
 		player.sendPacket(new ExActivateAutoShortcut(sc, _active));
 		
 		// When id is not auto used, deactivate auto shortcuts.

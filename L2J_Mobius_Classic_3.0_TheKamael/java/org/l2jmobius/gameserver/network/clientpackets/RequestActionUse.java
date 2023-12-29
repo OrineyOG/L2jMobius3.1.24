@@ -25,6 +25,7 @@ import org.l2jmobius.gameserver.handler.IPlayerActionHandler;
 import org.l2jmobius.gameserver.handler.PlayerActionHandler;
 import org.l2jmobius.gameserver.model.ActionDataHolder;
 import org.l2jmobius.gameserver.model.actor.Player;
+import org.l2jmobius.gameserver.model.actor.transform.TransformTemplate;
 import org.l2jmobius.gameserver.model.effects.AbstractEffect;
 import org.l2jmobius.gameserver.model.skill.AbnormalType;
 import org.l2jmobius.gameserver.model.skill.BuffInfo;
@@ -32,7 +33,6 @@ import org.l2jmobius.gameserver.network.GameClient;
 import org.l2jmobius.gameserver.network.PacketLogger;
 import org.l2jmobius.gameserver.network.SystemMessageId;
 import org.l2jmobius.gameserver.network.serverpackets.ActionFailed;
-import org.l2jmobius.gameserver.network.serverpackets.ExBasicActionList;
 import org.l2jmobius.gameserver.network.serverpackets.RecipeShopManageList;
 
 /**
@@ -86,8 +86,9 @@ public class RequestActionUse implements ClientPacket
 		// Don't allow to do some action if player is transformed
 		if (player.isTransformed())
 		{
-			final int[] allowedActions = player.isTransformed() ? ExBasicActionList.ACTIONS_ON_TRANSFORM : ExBasicActionList.DEFAULT_ACTION_LIST;
-			if (Arrays.binarySearch(allowedActions, _actionId) < 0)
+			final TransformTemplate transformTemplate = player.getTransformation().get().getTemplate(player);
+			final int[] allowedActions = transformTemplate.getBasicActionList();
+			if ((allowedActions == null) || (Arrays.binarySearch(allowedActions, _actionId) < 0))
 			{
 				player.sendPacket(ActionFailed.STATIC_PACKET);
 				PacketLogger.warning(player + " used action which he does not have! Id = " + _actionId + " transform: " + player.getTransformation().get().getId());

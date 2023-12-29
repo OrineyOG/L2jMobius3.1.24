@@ -56,4 +56,10 @@ public class ServitorMove implements IPlayerActionHandler
 			}
 		}
 	}
+	
+	@Override
+	public boolean isPetAction()
+	{
+		return true;
+	}
 }

@@ -33,7 +33,6 @@ import org.l2jmobius.gameserver.model.actor.transform.TransformTemplate;
 import org.l2jmobius.gameserver.model.holders.AdditionalItemHolder;
 import org.l2jmobius.gameserver.model.holders.AdditionalSkillHolder;
 import org.l2jmobius.gameserver.model.holders.SkillHolder;
-import org.l2jmobius.gameserver.network.serverpackets.ExBasicActionList;
 
 /**
  * Transformation data.
@@ -142,7 +141,7 @@ public class TransformData implements IXmlReader
 											}
 											set.set("actions", z.getTextContent());
 											final int[] actions = set.getIntArray("actions", " ");
-											templateData.setBasicActionList(new ExBasicActionList(actions));
+											templateData.setBasicActionList(actions);
 											break;
 										}
 										case "additionalSkills":

@@ -39,6 +39,7 @@ import org.l2jmobius.commons.util.StringUtil;
 import org.l2jmobius.gameserver.data.ItemTable;
 import org.l2jmobius.gameserver.data.xml.AgathionData;
 import org.l2jmobius.gameserver.data.xml.AppearanceItemData;
+import org.l2jmobius.gameserver.data.xml.ArmorSetData;
 import org.l2jmobius.gameserver.data.xml.EnchantItemOptionsData;
 import org.l2jmobius.gameserver.data.xml.EnsoulData;
 import org.l2jmobius.gameserver.data.xml.OptionData;
@@ -52,6 +53,7 @@ import org.l2jmobius.gameserver.instancemanager.CastleManager;
 import org.l2jmobius.gameserver.instancemanager.IdManager;
 import org.l2jmobius.gameserver.instancemanager.ItemsOnGroundManager;
 import org.l2jmobius.gameserver.instancemanager.SiegeGuardManager;
+import org.l2jmobius.gameserver.model.ArmorSet;
 import org.l2jmobius.gameserver.model.DropProtection;
 import org.l2jmobius.gameserver.model.Location;
 import org.l2jmobius.gameserver.model.VariationInstance;
@@ -71,12 +73,14 @@ import org.l2jmobius.gameserver.model.events.impl.creature.player.OnPlayerItemPi
 import org.l2jmobius.gameserver.model.events.impl.item.OnItemBypassEvent;
 import org.l2jmobius.gameserver.model.events.impl.item.OnItemTalk;
 import org.l2jmobius.gameserver.model.holders.AgathionSkillHolder;
+import org.l2jmobius.gameserver.model.holders.ArmorsetSkillHolder;
 import org.l2jmobius.gameserver.model.instancezone.Instance;
 import org.l2jmobius.gameserver.model.item.Armor;
 import org.l2jmobius.gameserver.model.item.EtcItem;
 import org.l2jmobius.gameserver.model.item.ItemTemplate;
 import org.l2jmobius.gameserver.model.item.Weapon;
 import org.l2jmobius.gameserver.model.item.appearance.AppearanceStone;
+import org.l2jmobius.gameserver.model.item.appearance.AppearanceType;
 import org.l2jmobius.gameserver.model.item.enchant.attribute.AttributeHolder;
 import org.l2jmobius.gameserver.model.item.type.EtcItemType;
 import org.l2jmobius.gameserver.model.item.type.ItemType;
@@ -91,6 +95,7 @@ import org.l2jmobius.gameserver.network.SystemMessageId;
 import org.l2jmobius.gameserver.network.serverpackets.DropItem;
 import org.l2jmobius.gameserver.network.serverpackets.GetItem;
 import org.l2jmobius.gameserver.network.serverpackets.InventoryUpdate;
+import org.l2jmobius.gameserver.network.serverpackets.SkillCoolTime;
 import org.l2jmobius.gameserver.network.serverpackets.SpawnItem;
 import org.l2jmobius.gameserver.network.serverpackets.SystemMessage;
 import org.l2jmobius.gameserver.taskmanager.ItemAppearanceTaskManager;
@@ -1047,8 +1052,6 @@ public class Item extends WorldObject
 		_enchantLevel = newLevel;
 		applyEnchantStats();
 		_storedInDb = false;
-		// Set the flag indicating that the item has just been enchanted
-		setJustEnchanted(true);
 		
 		getActingPlayer().getInventory().getPaperdollCache().clearMaxSetEnchant();
 	}
@@ -1651,7 +1654,9 @@ public class Item extends WorldObject
 		setDropperObjectId(dropper != null ? dropper.getObjectId() : 0); // Set the dropper Id for the knownlist packets in sendInfo
 		
 		// Add the Item dropped in the world as a visible object
-		World.getInstance().addVisibleObject(this, getWorldRegion());
+		final WorldRegion region = getWorldRegion();
+		region.addVisibleObject(this);
+		World.getInstance().addVisibleObject(this, region);
 		if (Config.SAVE_DROPPED_ITEM)
 		{
 			ItemsOnGroundManager.getInstance().save(this);
@@ -2571,6 +2576,11 @@ public class Item extends WorldObject
 		}
 	}
 	
+	public int getAppearanceStoneId()
+	{
+		return getVariables().getInt(ItemVariables.VISUAL_APPEARANCE_STONE_ID, 0);
+	}
+	
 	public long getVisualLifeTime()
 	{
 		return getVariables().getLong(ItemVariables.VISUAL_APPEARANCE_LIFE_TIME, 0);
@@ -2595,6 +2605,8 @@ public class Item extends WorldObject
 	
 	public void onVisualLifeTimeEnd()
 	{
+		removeVisualSetSkills();
+		
 		final ItemVariables vars = getVariables();
 		vars.remove(ItemVariables.VISUAL_ID);
 		vars.remove(ItemVariables.VISUAL_APPEARANCE_STONE_ID);
@@ -2616,6 +2628,124 @@ public class Item extends WorldObject
 			else
 			{
 				player.sendPacket(new SystemMessage(SystemMessageId.S1_HAS_BEEN_RESTORED_TO_ITS_PREVIOUS_APPEARANCE_AS_ITS_TEMPORARY_MODIFICATION_HAS_EXPIRED).addItemName(this));
+			}
+		}
+	}
+	
+	public void removeVisualSetSkills()
+	{
+		if (!isEquipped())
+		{
+			return;
+		}
+		
+		final int appearanceStoneId = getAppearanceStoneId();
+		if (appearanceStoneId > 0)
+		{
+			final AppearanceStone stone = AppearanceItemData.getInstance().getStone(appearanceStoneId);
+			if ((stone != null) && (stone.getType() == AppearanceType.FIXED))
+			{
+				final Player player = getActingPlayer();
+				if (player != null)
+				{
+					boolean update = false;
+					for (ArmorSet armorSet : ArmorSetData.getInstance().getSets(stone.getVisualId()))
+					{
+						if ((armorSet.getPiecesCount(player, Item::getVisualId) - 1 /* not removed yet */) < armorSet.getMinimumPieces())
+						{
+							for (ArmorsetSkillHolder holder : armorSet.getSkills())
+							{
+								final Skill skill = holder.getSkill();
+								if (skill != null)
+								{
+									player.removeSkill(skill, false, skill.isPassive());
+									update = true;
+								}
+							}
+						}
+					}
+					
+					if (update)
+					{
+						player.sendSkillList();
+					}
+				}
+			}
+		}
+	}
+	
+	public void applyVisualSetSkills()
+	{
+		if (!isEquipped())
+		{
+			return;
+		}
+		
+		final int appearanceStoneId = getAppearanceStoneId();
+		if (appearanceStoneId > 0)
+		{
+			final AppearanceStone stone = AppearanceItemData.getInstance().getStone(appearanceStoneId);
+			if ((stone != null) && (stone.getType() == AppearanceType.FIXED))
+			{
+				final Player player = getActingPlayer();
+				if (player != null)
+				{
+					boolean update = false;
+					boolean updateTimeStamp = false;
+					for (ArmorSet armorSet : ArmorSetData.getInstance().getSets(stone.getVisualId()))
+					{
+						if (armorSet.getPiecesCount(player, Item::getVisualId) >= armorSet.getMinimumPieces())
+						{
+							for (ArmorsetSkillHolder holder : armorSet.getSkills())
+							{
+								if (player.getSkillLevel(holder.getSkillId()) >= holder.getSkillLevel())
+								{
+									continue;
+								}
+								
+								final Skill skill = holder.getSkill();
+								if ((skill == null) || (skill.isPassive() && !skill.checkConditions(SkillConditionScope.PASSIVE, player, player)))
+								{
+									continue;
+								}
+								
+								player.addSkill(skill, false);
+								update = true;
+								
+								if (skill.isActive())
+								{
+									if (!player.hasSkillReuse(skill.getReuseHashCode()))
+									{
+										final int equipDelay = getEquipReuseDelay();
+										if (equipDelay > 0)
+										{
+											player.addTimeStamp(skill, equipDelay);
+											player.disableSkill(skill, equipDelay);
+										}
+									}
+									
+									// Active, non offensive, skills start with reuse on equip.
+									if (!skill.isBad() && !skill.isTransformation() && (Config.ARMOR_SET_EQUIP_ACTIVE_SKILL_REUSE > 0) && player.hasEnteredWorld())
+									{
+										player.addTimeStamp(skill, skill.getReuseDelay() > 0 ? skill.getReuseDelay() : Config.ARMOR_SET_EQUIP_ACTIVE_SKILL_REUSE);
+									}
+									
+									updateTimeStamp = true;
+								}
+							}
+						}
+					}
+					
+					if (updateTimeStamp)
+					{
+						player.sendPacket(new SkillCoolTime(player));
+					}
+					
+					if (update)
+					{
+						player.sendSkillList();
+					}
+				}
 			}
 		}
 	}

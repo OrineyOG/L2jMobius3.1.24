@@ -167,7 +167,7 @@ public class FakePlayerInfo extends ServerPacket
 		writeByte(_npc.getTeam().getId());
 		writeInt(_clan != null ? _clan.getCrestLargeId() : 0);
 		writeByte(_fpcHolder.getNobleLevel());
-		writeByte(_fpcHolder.isHero());
+		writeByte(_fpcHolder.isHero() ? 2 : 0); // 152 - Value for enabled changed to 2
 		writeByte(_fpcHolder.isFishing());
 		writeInt(_fpcHolder.getBaitLocationX());
 		writeInt(_fpcHolder.getBaitLocationY());

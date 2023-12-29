@@ -48,4 +48,10 @@ public class ServitorHold implements IPlayerActionHandler
 			((SummonAI) s.getAI()).notifyFollowStatusChange();
 		});
 	}
+	
+	@Override
+	public boolean isPetAction()
+	{
+		return true;
+	}
 }

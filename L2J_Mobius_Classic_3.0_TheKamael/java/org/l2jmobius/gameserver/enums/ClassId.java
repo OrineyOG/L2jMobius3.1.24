@@ -148,11 +148,13 @@ public enum ClassId implements IIdentifiable
 	
 	BERSERKER(127, false, Race.KAMAEL, TROOPER),
 	SOUL_BREAKER(194, false, Race.KAMAEL, SOUL_FINDER),
+	INSPECTOR(135, false, Race.KAMAEL, SOUL_FINDER),
 	SOUL_RANGER(130, false, Race.KAMAEL, WARDER),
 	
 	DOOMBRINGER(131, false, Race.KAMAEL, BERSERKER),
 	SOUL_HOUND(195, false, Race.KAMAEL, SOUL_BREAKER),
-	TRICKSTER(134, false, Race.KAMAEL, SOUL_RANGER);
+	TRICKSTER(134, false, Race.KAMAEL, SOUL_RANGER),
+	JUDICATOR(136, false, Race.KAMAEL, INSPECTOR);
 	
 	/** The Identifier of the Class */
 	private final int _id;

@@ -67,7 +67,7 @@ public class PartyPledge implements IAffectScopeHandler
 					return false;
 				}
 				
-				if ((p != player) && (p.getClanId() != clanId) && ((party == null) || (party != p.getParty())))
+				if ((p != player) && ((clanId == 0) || (p.getClanId() != clanId)) && ((party == null) || (party != p.getParty())))
 				{
 					return false;
 				}

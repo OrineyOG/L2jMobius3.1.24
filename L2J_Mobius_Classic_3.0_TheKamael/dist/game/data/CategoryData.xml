@@ -61,6 +61,7 @@
 		<id>130</id> <!-- arbalester -->
 		<id>131</id> <!-- doombringer -->
 		<id>134</id> <!-- trickster -->
+		<id>136</id> <!-- judicator -->
 		<id>192</id> <!-- Jin Kamael Soldier -->
 		<id>193</id> <!-- Soul Finder -->
 		<id>194</id> <!-- Soul Breaker -->
@@ -185,6 +186,7 @@
 		<id>130</id> <!-- arbalester -->
 		<id>131</id> <!-- doombringer -->
 		<id>134</id> <!-- trickster -->
+		<id>136</id> <!-- judicator -->
 		<id>192</id> <!-- Jin Kamael Soldier -->
 		<id>193</id> <!-- Soul Finder -->
 		<id>194</id> <!-- Soul Breaker -->
@@ -295,6 +297,7 @@
 		<id>118</id> <!-- maestro -->
 		<id>131</id> <!-- doombringer -->
 		<id>134</id> <!-- trickster -->
+		<id>136</id> <!-- judicator -->
 		<id>195</id> <!-- Soul Hound -->
 	</category>
 	<category name="BOUNTY_HUNTER_GROUP">

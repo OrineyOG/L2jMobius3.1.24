@@ -16,6 +16,9 @@
  */
 package org.l2jmobius.gameserver.network.serverpackets;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.l2jmobius.gameserver.data.sql.ClanTable;
 import org.l2jmobius.gameserver.enums.SiegeClanType;
 import org.l2jmobius.gameserver.model.SiegeClan;
@@ -44,7 +47,7 @@ import org.l2jmobius.gameserver.network.ServerPackets;
  * S = AllyName<br>
  * S = AllyLeaderName<br>
  * d = AllyCrestID<br>
- * @author KenM
+ * @author Atronic
  */
 public class SiegeDefenderList extends ServerPacket
 {
@@ -60,64 +63,76 @@ public class SiegeDefenderList extends ServerPacket
 	{
 		ServerPackets.CASTLE_SIEGE_DEFENDER_LIST.writeId(this);
 		writeInt(_castle.getResidenceId());
-		writeInt(0); // Unknown
-		writeInt(1); // Unknown
-		writeInt(0); // Unknown
-		final int size = _castle.getSiege().getDefenderWaitingClans().size() + _castle.getSiege().getDefenderClans().size() + (_castle.getOwner() != null ? 1 : 0);
-		writeInt(size);
-		writeInt(size);
-		// Add owners
-		final Clan ownerClan = _castle.getOwner();
-		if (ownerClan != null)
+		writeInt(0); // Unknown.
+		
+		final Clan owner = _castle.getOwner();
+		writeInt((owner != null) && _castle.isTimeRegistrationOver()); // Valid registration.
+		writeInt(0); // Unknown.
+		
+		// Add owners.
+		final List<Clan> defenders = new ArrayList<>();
+		if (owner != null)
 		{
-			writeInt(ownerClan.getId());
-			writeString(ownerClan.getName());
-			writeString(ownerClan.getLeaderName());
-			writeInt(ownerClan.getCrestId());
-			writeInt(0); // signed time (seconds) (not storated by L2J)
-			writeInt(SiegeClanType.OWNER.ordinal());
-			writeInt(ownerClan.getAllyId());
-			writeString(ownerClan.getAllyName());
-			writeString(""); // AllyLeaderName
-			writeInt(ownerClan.getAllyCrestId());
+			defenders.add(owner);
 		}
-		// List of confirmed defenders
+		
+		// List of confirmed defenders.
 		for (SiegeClan siegeClan : _castle.getSiege().getDefenderClans())
 		{
-			final Clan defendingClan = ClanTable.getInstance().getClan(siegeClan.getClanId());
-			if ((defendingClan == null) || (defendingClan == _castle.getOwner()))
+			final Clan clan = ClanTable.getInstance().getClan(siegeClan.getClanId());
+			if ((clan != null) && (clan != owner))
 			{
-				continue;
+				defenders.add(clan);
 			}
-			writeInt(defendingClan.getId());
-			writeString(defendingClan.getName());
-			writeString(defendingClan.getLeaderName());
-			writeInt(defendingClan.getCrestId());
-			writeInt(0); // signed time (seconds) (not storated by L2J)
-			writeInt(SiegeClanType.DEFENDER.ordinal());
-			writeInt(defendingClan.getAllyId());
-			writeString(defendingClan.getAllyName());
-			writeString(""); // AllyLeaderName
-			writeInt(defendingClan.getAllyCrestId());
 		}
-		// List of not confirmed defenders
+		
+		// List of not confirmed defenders.
 		for (SiegeClan siegeClan : _castle.getSiege().getDefenderWaitingClans())
 		{
-			final Clan defendingClan = ClanTable.getInstance().getClan(siegeClan.getClanId());
-			if (defendingClan == null)
+			final Clan clan = ClanTable.getInstance().getClan(siegeClan.getClanId());
+			if (clan != null)
 			{
-				continue;
+				defenders.add(clan);
 			}
-			writeInt(defendingClan.getId());
-			writeString(defendingClan.getName());
-			writeString(defendingClan.getLeaderName());
-			writeInt(defendingClan.getCrestId());
-			writeInt(0); // signed time (seconds) (not storated by L2J)
-			writeInt(SiegeClanType.DEFENDER_PENDING.ordinal());
-			writeInt(defendingClan.getAllyId());
-			writeString(defendingClan.getAllyName());
-			writeString(""); // AllyLeaderName
-			writeInt(defendingClan.getAllyCrestId());
+		}
+		
+		final int size = defenders.size();
+		writeInt(size);
+		writeInt(size);
+		
+		for (Clan clan : defenders)
+		{
+			writeInt(clan.getId());
+			writeString(clan.getName());
+			writeString(clan.getLeaderName());
+			writeInt(clan.getCrestId());
+			writeInt(0); // Signed time in seconds.
+			if (clan == owner)
+			{
+				writeInt(SiegeClanType.OWNER.ordinal() + 1);
+			}
+			else if (_castle.getSiege().getDefenderClans().stream().anyMatch(defender -> defender.getClanId() == clan.getId()))
+			{
+				writeInt(SiegeClanType.DEFENDER.ordinal() + 1);
+			}
+			else
+			{
+				writeInt(SiegeClanType.DEFENDER_PENDING.ordinal() + 1);
+			}
+			writeInt(clan.getAllyId());
+			if (clan.getAllyId() != 0)
+			{
+				final AllianceInfo info = new AllianceInfo(clan.getAllyId());
+				writeString(info.getName());
+				writeString(info.getLeaderP()); // Ally leader name.
+				writeInt(clan.getAllyCrestId());
+			}
+			else
+			{
+				writeString("");
+				writeString(""); // Ally leader name.
+				writeInt(0);
+			}
 		}
 	}
 }

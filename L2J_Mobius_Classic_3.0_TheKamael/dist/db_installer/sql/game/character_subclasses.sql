@@ -9,4 +9,10 @@ CREATE TABLE IF NOT EXISTS `character_subclasses` (
   `class_index` int(1) NOT NULL DEFAULT 0,
   `dual_class` BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`charId`,`class_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+
+# RESTORE_CHAR_SUBCLASSES, ADD_CHAR_SUBCLASS, UPDATE_CHAR_SUBCLASS, DELETE_CHAR_SUBCLASS
+CREATE INDEX idx_charId_classIndex ON character_subclasses (charId, class_index);
+
+# CharSelectionInfo
+CREATE INDEX idx_charId_classId ON character_subclasses (charId, class_id);

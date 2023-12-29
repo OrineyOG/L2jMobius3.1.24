@@ -57,7 +57,10 @@ public enum CommissionItemType
 	NECKLACE(31),
 	BELT(32),
 	BRACELET(33),
+	AGATHION(62),
 	HAIR_ACCESSORY(34),
+	BROOCH_JEWEL(63),
+	ARTIFACT(64),
 	// Supplies
 	POTION(35),
 	SCROLL_ENCHANT_WEAPON(36),
@@ -65,6 +68,7 @@ public enum CommissionItemType
 	SCROLL_OTHER(38),
 	SOULSHOT(39),
 	SPIRITSHOT(40),
+	OTHER_SUPPLIES(41),
 	// Pet Goods
 	PET_EQUIPMENT(42),
 	PET_SUPPLIES(43),

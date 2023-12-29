@@ -35,7 +35,9 @@ import org.l2jmobius.gameserver.model.actor.Playable;
 import org.l2jmobius.gameserver.model.actor.Player;
 import org.l2jmobius.gameserver.model.actor.Summon;
 import org.l2jmobius.gameserver.model.actor.instance.Guard;
+import org.l2jmobius.gameserver.model.actor.transform.TransformTemplate;
 import org.l2jmobius.gameserver.model.effects.AbstractEffect;
+import org.l2jmobius.gameserver.model.effects.EffectType;
 import org.l2jmobius.gameserver.model.events.EventDispatcher;
 import org.l2jmobius.gameserver.model.events.EventType;
 import org.l2jmobius.gameserver.model.events.impl.item.OnItemUse;
@@ -46,12 +48,12 @@ import org.l2jmobius.gameserver.model.item.ItemTemplate;
 import org.l2jmobius.gameserver.model.item.instance.Item;
 import org.l2jmobius.gameserver.model.skill.AbnormalType;
 import org.l2jmobius.gameserver.model.skill.BuffInfo;
+import org.l2jmobius.gameserver.model.skill.EffectScope;
 import org.l2jmobius.gameserver.model.skill.Skill;
 import org.l2jmobius.gameserver.model.skill.targets.AffectScope;
 import org.l2jmobius.gameserver.model.skill.targets.TargetType;
 import org.l2jmobius.gameserver.model.zone.ZoneId;
 import org.l2jmobius.gameserver.network.SystemMessageId;
-import org.l2jmobius.gameserver.network.serverpackets.ExBasicActionList;
 
 /**
  * @author Mobius
@@ -381,8 +383,9 @@ public class AutoUseTaskManager
 						// Do not allow to do some action if player is transformed.
 						if (player.isTransformed())
 						{
-							final int[] allowedActions = player.isTransformed() ? ExBasicActionList.ACTIONS_ON_TRANSFORM : ExBasicActionList.DEFAULT_ACTION_LIST;
-							if (Arrays.binarySearch(allowedActions, actionId) < 0)
+							final TransformTemplate transformTemplate = player.getTransformation().get().getTemplate(player);
+							final int[] allowedActions = transformTemplate.getBasicActionList();
+							if ((allowedActions == null) || (Arrays.binarySearch(allowedActions, actionId) < 0))
 							{
 								continue ACTIONS;
 							}
@@ -394,7 +397,24 @@ public class AutoUseTaskManager
 							final IPlayerActionHandler actionHandler = PlayerActionHandler.getInstance().getHandler(actionHolder.getHandler());
 							if (actionHandler != null)
 							{
-								actionHandler.useAction(player, actionHolder, false, false);
+								if (!actionHandler.isPetAction())
+								{
+									actionHandler.useAction(player, actionHolder, false, false);
+								}
+								else
+								{
+									final Summon summon = player.getAnyServitor();
+									if ((summon != null) && !summon.isAlikeDead())
+									{
+										final Skill skill = summon.getKnownSkill(actionHolder.getOptionId());
+										if ((skill != null) && !canSummonCastSkill(player, summon, skill))
+										{
+											continue ACTIONS;
+										}
+										
+										actionHandler.useAction(player, actionHolder, false, false);
+									}
+								}
 							}
 						}
 					}
@@ -476,6 +496,59 @@ public class AutoUseTaskManager
 			}
 			
 			return !player.isSkillDisabled(skill) && skill.checkCondition(player, target, false);
+		}
+		
+		private boolean canSummonCastSkill(Player player, Summon summon, Skill skill)
+		{
+			if (skill.isBad() && (player.getTarget() == null))
+			{
+				return false;
+			}
+			
+			final int mpConsume = skill.getMpConsume() + skill.getMpInitialConsume();
+			if ((((mpConsume != 0) && (mpConsume > (int) Math.floor(summon.getCurrentMp()))) || ((skill.getHpConsume() != 0) && (skill.getHpConsume() > (int) Math.floor(summon.getCurrentHp())))))
+			{
+				return false;
+			}
+			
+			if (summon.isSkillDisabled(skill))
+			{
+				return false;
+			}
+			
+			if (((player.getTarget() != null) && !skill.checkCondition(summon, player.getTarget(), false)) || ((player.getTarget() == null) && !skill.checkCondition(summon, player, false)))
+			{
+				return false;
+			}
+			
+			if ((skill.getItemConsumeCount() > 0) && (summon.getInventory().getInventoryItemCount(skill.getItemConsumeId(), -1) < skill.getItemConsumeCount()))
+			{
+				return false;
+			}
+			
+			if (skill.getTargetType().equals(TargetType.SELF) || skill.getTargetType().equals(TargetType.SUMMON))
+			{
+				final BuffInfo summonInfo = summon.getEffectList().getBuffInfoBySkillId(skill.getId());
+				return (summonInfo != null) && (summonInfo.getTime() >= REUSE_MARGIN_TIME);
+			}
+			
+			if ((skill.getEffects(EffectScope.GENERAL) != null) && skill.getEffects(EffectScope.GENERAL).stream().anyMatch(a -> a.getEffectType().equals(EffectType.MANAHEAL_BY_LEVEL)) && (player.getCurrentMpPercent() > 80))
+			{
+				return false;
+			}
+			
+			final BuffInfo buffInfo = player.getEffectList().getBuffInfoBySkillId(skill.getId());
+			final BuffInfo abnormalBuffInfo = player.getEffectList().getFirstBuffInfoByAbnormalType(skill.getAbnormalType());
+			if (abnormalBuffInfo != null)
+			{
+				if (buffInfo != null)
+				{
+					return (abnormalBuffInfo.getSkill().getId() == buffInfo.getSkill().getId()) && ((buffInfo.getTime() <= REUSE_MARGIN_TIME) || (buffInfo.getSkill().getLevel() < skill.getLevel()));
+				}
+				return (abnormalBuffInfo.getSkill().getAbnormalLevel() < skill.getAbnormalLevel()) || abnormalBuffInfo.isAbnormalType(AbnormalType.NONE);
+			}
+			
+			return true;
 		}
 	}
 	

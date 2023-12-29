@@ -16,6 +16,7 @@
  */
 package handlers.effecthandlers;
 
+import org.l2jmobius.gameserver.enums.StatModifierType;
 import org.l2jmobius.gameserver.model.StatSet;
 import org.l2jmobius.gameserver.model.actor.Creature;
 import org.l2jmobius.gameserver.model.effects.AbstractEffect;
@@ -25,6 +26,7 @@ import org.l2jmobius.gameserver.model.events.listeners.FunctionEventListener;
 import org.l2jmobius.gameserver.model.events.returns.DamageReturn;
 import org.l2jmobius.gameserver.model.item.instance.Item;
 import org.l2jmobius.gameserver.model.skill.Skill;
+import org.l2jmobius.gameserver.model.stats.Stat;
 
 /**
  * @author Sdw
@@ -32,10 +34,12 @@ import org.l2jmobius.gameserver.model.skill.Skill;
 public class ReduceDamage extends AbstractEffect
 {
 	private final double _amount;
+	private final StatModifierType _mode;
 	
 	public ReduceDamage(StatSet params)
 	{
 		_amount = params.getDouble("amount");
+		_mode = params.getEnum("mode", StatModifierType.class, StatModifierType.DIFF);
 	}
 	
 	private DamageReturn onDamageReceivedEvent(OnCreatureDamageReceived event)
@@ -46,7 +50,15 @@ public class ReduceDamage extends AbstractEffect
 			return null;
 		}
 		
-		final double newDamage = event.getDamage() * (_amount / 100);
+		final double newDamage;
+		if (_mode == StatModifierType.PER)
+		{
+			newDamage = event.getDamage() - (event.getDamage() * (_amount / 100));
+		}
+		else // DIFF
+		{
+			newDamage = event.getDamage() - Math.max((_amount - event.getAttacker().getStat().getAdd(Stat.IGNORE_REDUCE_DAMAGE)), 0.0);
+		}
 		
 		return new DamageReturn(false, true, false, newDamage);
 	}
